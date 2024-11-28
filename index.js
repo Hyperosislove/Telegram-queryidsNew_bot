@@ -1,41 +1,41 @@
 const TelegramBot = require('node-telegram-bot-api');
 const querystring = require('querystring');
+const express = require('express');
+const app = express();
 
-// Environment variable for the Telegram Bot Token
-const BOT_TOKEN = process.env.BOT_TOKEN; // Get token from environment variable
+const BOT_TOKEN = process.env.BOT_TOKEN;
 
-// Create a new Telegram Bot instance
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
-// Welcome message when user starts the bot
+app.get('/', (req, res) => {
+    res.send('Bot is running...');
+});
+
+const port = process.env.PORT || 5000;
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});
+
 bot.onText(/\/start/, (msg) => {
     const welcomeMessage = 'Hello! Send me an encoded URL to process.';
-
     bot.sendMessage(msg.chat.id, welcomeMessage);
 });
 
-// Handling incoming messages
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text.trim();
 
-    // Process the URL if message is not a command
     if (!text.startsWith('/') && text.length > 0) {
         try {
-            // Extract URL from the message
             const urlMatch = text.match(/https?:\/\/[^\s]+/);
             if (!urlMatch) throw new Error('No valid URL found in the text.');
 
             let urlText = urlMatch[0];
-
-            // Parsing URL and extracting the fragment
             const url = new URL(urlText);
-            const fragment = url.hash.substring(1); // Removing '#' from hash
+            const fragment = url.hash.substring(1);
             const params = querystring.parse(fragment);
 
             let tgWebAppData;
-
-            // Check for tgWebAppData, query, or user parameters
             if (params.tgWebAppData) {
                 tgWebAppData = params.tgWebAppData;
             } else if (params.query) {
@@ -57,7 +57,6 @@ bot.on('message', (msg) => {
                     return;
                 }
 
-                // Send processed string back to the user
                 bot.sendMessage(chatId, `\`${processedString}\``, { parse_mode: 'Markdown' });
             } else {
                 bot.sendMessage(chatId, 'Invalid URL format: Missing tgWebAppData, query, or user.');
