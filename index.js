@@ -16,69 +16,76 @@ app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
 
-// Stylish Welcome Message with Modern Design
+// Modern Welcome Message
 bot.onText(/\/start/, (msg) => {
     const welcomeMessage = `
-    💬 **Welcome to the Stylish Bot!**
-    
-    I am a modern Telegram bot created to make your life easier! 🤖✨
-    
-    Here’s how I work:
-    1. Send me an **encoded URL** and I will process it for you.
-    2. Tap on **Send my Info** to get more details about me.
-    
-    I’m updated weekly and am available to help you anytime. Just send a URL and I’ll take care of the rest! 😎
+✨ **Welcome to Your Stylish Assistant Bot!** 🤖  
+I’m here to help you process encoded URLs, manage data, and provide easy interaction options.
 
-    ⏳ _Note: I am down for maintenance on Fridays!_
+🔹 **What can I do for you?**  
+1. Process **encoded URLs** into a readable format.  
+2. Provide quick **copy options** for processed results.  
+3. Share detailed **info about this bot**.  
 
-    Use the buttons below to interact with me.
-    `;
+📌 _Use the buttons below to get started!_
 
-    const startButton = {
+⚙️ **Pro Tip:** Send any URL directly to process it.
+`;
+
+    const startOptions = {
         reply_markup: {
-            keyboard: [
-                [
-                    { text: 'Send my Info' }, 
-                    { text: '🔄 Process URL' }
-                ]
+            inline_keyboard: [
+                [{ text: '🔗 Learn More', callback_data: 'learn_more' }],
+                [{ text: '⚙️ Send Info', callback_data: 'send_info' }],
             ],
-            resize_keyboard: true,
-            one_time_keyboard: false,
         },
+        parse_mode: 'Markdown',
     };
 
-    bot.sendMessage(msg.chat.id, welcomeMessage, startButton);
+    bot.sendMessage(msg.chat.id, welcomeMessage, startOptions);
 });
 
-// Stylish "Send My Info" Command
-bot.onText(/\/send my info/i, (msg) => {
-    const userInfo = `
-    💡 **About Me**:
-    - **Creator**: [@hyperosislove](https://t.me/hyperosislove)
-    - **Bot Features**: Weekly updates, URL processing, and personalized assistance.
-    - **Maintenance**: I am unavailable on **Fridays** for maintenance.
-    
-    📲 **Contact**: [Your Contact Info] (Feel free to reach out!)
+// Handle Callback Queries (Inline Button Actions)
+bot.on('callback_query', (callbackQuery) => {
+    const chatId = callbackQuery.message.chat.id;
 
-    ✅ **Fun Fact**: I was designed to make your Telegram experience smoother and easier! 🚀
-    `;
+    if (callbackQuery.data === 'learn_more') {
+        const learnMoreMessage = `
+🛠️ **How this Bot Works**:  
+1. Send any **encoded URL** (e.g., a link with tgWebAppData).  
+2. The bot will process it into readable data.  
+3. Use the **Copy Button** or reprocess as needed.
 
-    bot.sendMessage(msg.chat.id, userInfo, { parse_mode: 'Markdown' });
+🔗 Created by: [Your Name](https://t.me/yourusername)  
+📦 Updated Weekly.
+`;
+
+        bot.sendMessage(chatId, learnMoreMessage, { parse_mode: 'Markdown' });
+    } else if (callbackQuery.data === 'send_info') {
+        const infoMessage = `
+💡 **Bot Info**:  
+- **Creator**: [@yourusername](https://t.me/yourusername)  
+- **Features**: Advanced URL processing, stylish design, easy interaction.  
+- **Contact**: [Contact Me](https://t.me/yourusername)
+
+📅 **Maintenance**: Fridays (Unavailable).
+`;
+
+        bot.sendMessage(chatId, infoMessage, { parse_mode: 'Markdown' });
+    }
 });
 
-// Process the URL and make it stylish
+// URL Processing with Custom Copy Option
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text.trim();
 
-    if (!text.startsWith('/') && text.length > 0) { // Skip if it's a command
+    if (!text.startsWith('/') && text.length > 0) {
         try {
-            // Extract the URL from the text
             const urlMatch = text.match(/https?:\/\/[^\s]+/);
             if (!urlMatch) throw new Error('No valid URL found in the text.');
 
-            let urlText = urlMatch[0];
-
+            const urlText = urlMatch[0];
             const url = new URL(urlText);
             const fragment = url.hash.substring(1); // Remove the leading '#'
             const params = querystring.parse(fragment);
@@ -106,25 +113,18 @@ bot.on('message', (msg) => {
                     return;
                 }
 
-                // Modern button for URL copy action
-                const copyButton = {
+                // Stylish Copy and Resend Buttons
+                const copyResendOptions = {
                     reply_markup: {
                         inline_keyboard: [
-                            [
-                                {
-                                    text: '📋 Copy URL',
-                                    callback_data: 'copy_url'
-                                }
-                            ]
-                        ]
-                    }
+                            [{ text: '📋 Copy Result', callback_data: 'copy_result' }],
+                            [{ text: '🔄 Resend URL', callback_data: 'resend_url' }],
+                        ],
+                    },
+                    parse_mode: 'Markdown',
                 };
 
-                // Send the processed string with markdown and button
-                bot.sendMessage(chatId, `🔧 **Processed URL**: \`${processedString}\`\n\nClick on the button below to copy it!`, {
-                    parse_mode: 'Markdown',
-                    reply_markup: copyButton.reply_markup,
-                });
+                bot.sendMessage(chatId, `🔧 **Processed Data**: \`${processedString}\`\n\nChoose an option below:`, copyResendOptions);
             } else {
                 bot.sendMessage(chatId, '❌ Invalid URL format: Missing tgWebAppData, query, or user.');
             }
@@ -134,12 +134,13 @@ bot.on('message', (msg) => {
     }
 });
 
-// Handle the callback data for the "Copy URL" button
+// Handle Inline Button Actions for Copy and Resend
 bot.on('callback_query', (callbackQuery) => {
-    const messageId = callbackQuery.message.message_id;
     const chatId = callbackQuery.message.chat.id;
 
-    if (callbackQuery.data === 'copy_url') {
-        bot.sendMessage(chatId, '✔️ URL copied to clipboard! You can now use or resend it.');
+    if (callbackQuery.data === 'copy_result') {
+        bot.sendMessage(chatId, '📋 **Copied to Clipboard**! (Simulated)', { parse_mode: 'Markdown' });
+    } else if (callbackQuery.data === 'resend_url') {
+        bot.sendMessage(chatId, '🔄 Resend the URL by typing or pasting it here!');
     }
 });
