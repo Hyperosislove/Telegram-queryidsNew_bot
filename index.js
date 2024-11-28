@@ -56,7 +56,7 @@ bot.on('callback_query', (callbackQuery) => {
 2. The bot will process it into readable data.  
 3. Use the **Copy Button** or reprocess as needed.
 
-🔗 Created by: [Your Name](https://t.me/yourusername)  
+🔗 Created by: [@hyperosislove](https://t.me/hyperosislove)  
 📦 Updated Weekly.
 `;
 
@@ -64,14 +64,18 @@ bot.on('callback_query', (callbackQuery) => {
     } else if (callbackQuery.data === 'send_info') {
         const infoMessage = `
 💡 **Bot Info**:  
-- **Creator**: [@yourusername](https://t.me/yourusername)  
+- **Creator**: [@hyperosislove](https://t.me/hyperosislove)  
 - **Features**: Advanced URL processing, stylish design, easy interaction.  
-- **Contact**: [Contact Me](https://t.me/yourusername)
+- **Contact**: [Contact Me](https://t.me/hyperosislove)
 
 📅 **Maintenance**: Fridays (Unavailable).
 `;
 
         bot.sendMessage(chatId, infoMessage, { parse_mode: 'Markdown' });
+    } else if (callbackQuery.data === 'copy_result') {
+        bot.sendMessage(chatId, '📋 **Copied to Clipboard**! (Simulated)', { parse_mode: 'Markdown' });
+    } else if (callbackQuery.data === 'resend_url') {
+        bot.sendMessage(chatId, '🔄 Resend the URL by typing or pasting it here!');
     }
 });
 
@@ -113,34 +117,23 @@ bot.on('message', (msg) => {
                     return;
                 }
 
-                // Stylish Copy and Resend Buttons
                 const copyResendOptions = {
                     reply_markup: {
                         inline_keyboard: [
                             [{ text: '📋 Copy Result', callback_data: 'copy_result' }],
                             [{ text: '🔄 Resend URL', callback_data: 'resend_url' }],
+                            [{ text: '🏠 Start', callback_data: 'start' }],
                         ],
                     },
                     parse_mode: 'Markdown',
                 };
 
-                bot.sendMessage(chatId, `🔧 **Processed Data**: \`${processedString}\`\n\nChoose an option below:`, copyResendOptions);
+                bot.sendMessage(chatId, `\`\`\`\n${processedString}\n\`\`\`\nChoose an option below:`, copyResendOptions);
             } else {
                 bot.sendMessage(chatId, '❌ Invalid URL format: Missing tgWebAppData, query, or user.');
             }
         } catch (error) {
             bot.sendMessage(chatId, '⚠️ Error processing URL: ' + error.message);
         }
-    }
-});
-
-// Handle Inline Button Actions for Copy and Resend
-bot.on('callback_query', (callbackQuery) => {
-    const chatId = callbackQuery.message.chat.id;
-
-    if (callbackQuery.data === 'copy_result') {
-        bot.sendMessage(chatId, '📋 **Copied to Clipboard**! (Simulated)', { parse_mode: 'Markdown' });
-    } else if (callbackQuery.data === 'resend_url') {
-        bot.sendMessage(chatId, '🔄 Resend the URL by typing or pasting it here!');
     }
 });
