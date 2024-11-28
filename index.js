@@ -16,6 +16,12 @@ app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
 
+// Set Persistent Commands (Menu)
+bot.setMyCommands([
+    { command: '/start', description: 'Start the bot' },
+    { command: '/help', description: 'Show help information' },
+]);
+
 // Start Command with Inline Buttons
 bot.onText(/\/start/, (msg) => {
     const welcomeMessage = `
