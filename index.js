@@ -16,27 +16,27 @@ app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
 
-// Modern Welcome Message
+// Start Command with Inline Buttons
 bot.onText(/\/start/, (msg) => {
     const welcomeMessage = `
 ✨ **Welcome to Your Stylish Assistant Bot!** 🤖  
-I’m here to help you process encoded URLs, manage data, and provide easy interaction options.
+I’m here to assist you with URL processing and provide quick information at your fingertips.
 
-🔹 **What can I do for you?**  
-1. Process **encoded URLs** into a readable format.  
-2. Provide quick **copy options** for processed results.  
-3. Share detailed **info about this bot**.  
+⚙️ **Features**:  
+1. URL processing for tgWebAppData and other encoded queries.  
+2. Simplified and elegant design.  
 
-📌 _Use the buttons below to get started!_
-
-⚙️ **Pro Tip:** Send any URL directly to process it.
-`;
+📌 Use the buttons below to explore more options or get started!  
+🔗 **Contact Information** available as well.
+    `;
 
     const startOptions = {
         reply_markup: {
             inline_keyboard: [
-                [{ text: '🔗 Learn More', callback_data: 'learn_more' }],
-                [{ text: '⚙️ Send Info', callback_data: 'send_info' }],
+                [{ text: '💡 About Me', callback_data: 'about_me' }],
+                [{ text: '📩 Contact Creator', callback_data: 'contact_creator' }],
+                [{ text: 'ℹ️ Bot Features', callback_data: 'bot_features' }],
+                [{ text: '❓ Help & FAQ', callback_data: 'help_faq' }],
             ],
         },
         parse_mode: 'Markdown',
@@ -45,41 +45,68 @@ I’m here to help you process encoded URLs, manage data, and provide easy inter
     bot.sendMessage(msg.chat.id, welcomeMessage, startOptions);
 });
 
-// Handle Callback Queries (Inline Button Actions)
+// Handle Inline Button Actions
 bot.on('callback_query', (callbackQuery) => {
     const chatId = callbackQuery.message.chat.id;
 
-    if (callbackQuery.data === 'learn_more') {
-        const learnMoreMessage = `
-🛠️ **How this Bot Works**:  
-1. Send any **encoded URL** (e.g., a link with tgWebAppData).  
-2. The bot will process it into readable data.  
-3. Use the **Copy Button** or reprocess as needed.
+    if (callbackQuery.data === 'about_me') {
+        bot.sendMessage(
+            chatId,
+            `
+👤 **About the Creator**:  
+- **Name**: Hyperosis Love  
+- **Username**: [@hyperosislove](https://t.me/hyperosislove)  
+- **Specialty**: Creating advanced Telegram bots and automation tools.  
 
-🔗 Created by: [@hyperosislove](https://t.me/hyperosislove)  
-📦 Updated Weekly.
-`;
+🔗 Feel free to reach out for collaboration!
+            `,
+            { parse_mode: 'Markdown' }
+        );
+    } else if (callbackQuery.data === 'contact_creator') {
+        bot.sendMessage(
+            chatId,
+            `
+📩 **Contact Information**:  
+- **Telegram**: [@hyperosislove](https://t.me/hyperosislove)  
+- **Email**: hyperosis@example.com  
+- **Availability**: Monday to Friday, 10 AM - 6 PM.
+            `,
+            { parse_mode: 'Markdown' }
+        );
+    } else if (callbackQuery.data === 'bot_features') {
+        bot.sendMessage(
+            chatId,
+            `
+✨ **Bot Features**:  
+1. Process tgWebAppData from URLs.  
+2. Minimalist design for ease of use.  
+3. Fast and efficient URL parsing.  
+4. Fully customizable for your needs.  
 
-        bot.sendMessage(chatId, learnMoreMessage, { parse_mode: 'Markdown' });
-    } else if (callbackQuery.data === 'send_info') {
-        const infoMessage = `
-💡 **Bot Info**:  
-- **Creator**: [@hyperosislove](https://t.me/hyperosislove)  
-- **Features**: Advanced URL processing, stylish design, easy interaction.  
-- **Contact**: [Contact Me](https://t.me/hyperosislove)
+💻 Updated regularly with modern features.
+            `,
+            { parse_mode: 'Markdown' }
+        );
+    } else if (callbackQuery.data === 'help_faq') {
+        bot.sendMessage(
+            chatId,
+            `
+❓ **Help & FAQ**:  
+- **How to use this bot?**  
+  Send any encoded URL, and I’ll process it for you.  
 
-📅 **Maintenance**: Fridays (Unavailable).
-`;
+- **What formats are supported?**  
+  tgWebAppData, queries, and more.  
 
-        bot.sendMessage(chatId, infoMessage, { parse_mode: 'Markdown' });
-    } else if (callbackQuery.data === 'copy_result') {
-        bot.sendMessage(chatId, '📋 **Copied to Clipboard**! (Simulated)', { parse_mode: 'Markdown' });
-    } else if (callbackQuery.data === 'resend_url') {
-        bot.sendMessage(chatId, '🔄 Resend the URL by typing or pasting it here!');
+- **Need more help?**  
+  Contact my creator [@hyperosislove](https://t.me/hyperosislove).
+            `,
+            { parse_mode: 'Markdown' }
+        );
     }
 });
 
-// URL Processing with Custom Copy Option
+// URL Processing without Inline Buttons
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text.trim();
@@ -117,18 +144,8 @@ bot.on('message', (msg) => {
                     return;
                 }
 
-                const copyResendOptions = {
-                    reply_markup: {
-                        inline_keyboard: [
-                            [{ text: '📋 Copy Result', callback_data: 'copy_result' }],
-                            [{ text: '🔄 Resend URL', callback_data: 'resend_url' }],
-                            [{ text: '🏠 Start', callback_data: 'start' }],
-                        ],
-                    },
-                    parse_mode: 'Markdown',
-                };
-
-                bot.sendMessage(chatId, `\`\`\`\n${processedString}\n\`\`\`\nChoose an option below:`, copyResendOptions);
+                // Send processed data in monospace format
+                bot.sendMessage(chatId, `\`\`\`\n${processedString}\n\`\`\``, { parse_mode: 'Markdown' });
             } else {
                 bot.sendMessage(chatId, '❌ Invalid URL format: Missing tgWebAppData, query, or user.');
             }
